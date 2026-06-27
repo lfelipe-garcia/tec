@@ -38,6 +38,7 @@
             line-height: 1.6;
         }
 
+        /* Moldura do botão de status */
         .status-badge {
             display: inline-block;
             background-color: rgba(0, 173, 181, 0.1);
@@ -49,14 +50,21 @@
             margin-top: 20px;
             border: 1px solid rgba(0, 173, 181, 0.3);
         }
+
+        /* Estilização exclusiva do LED Verde */
+        .led-verde {
+            color: #00ff66; /* Verde vivo */
+            margin-right: 5px;
+            text-shadow: 0 0 8px #00ff66, 0 0 15px #00ff66; /* Efeito de luz acesa */
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>L Felipe - Tech</h1>
+        <h1>LFelipe - Tech</h1>
         <p>O domínio <strong>lfelipe.tec.br</strong> está configurado e operando com sucesso.</p>
-        <span class="status-badge">● Servidor Ativo</span>
+        <span class="status-badge"><span class="led-verde">●</span> Servidor Ativo</span>
     </div>
 
 </body>
