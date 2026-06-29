@@ -11,16 +11,18 @@
             background-color: #121212; 
             color: #ffffff; 
             text-align: center; 
-            padding: 80px 20px;
+            padding: 60px 20px;
             margin: 0;
         }
         
         /* Container principal para centralizar e dar um aspecto elegante */
         .container {
             max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
             margin: 0 auto;
             background-color: #1e1e1e;
-            padding: 40px;
+            padding: 40px 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             border-top: 4px solid #00adb5; /* Detalhe em azul tecnológico */
@@ -43,19 +45,22 @@
         .clock-container {
             font-family: 'Courier New', Courier, monospace;
             background-color: rgba(0, 0, 0, 0.3);
-            padding: 15px 25px;
+            padding: 15px 20px;
             border-radius: 8px;
             display: inline-block;
             margin-bottom: 25px;
             border: 1px solid rgba(0, 173, 181, 0.2);
             letter-spacing: 1px;
-            min-width: 320px;
+            width: 100%;
+            max-width: 360px; /* Define um limite confortável para PCs */
+            box-sizing: border-box;
         }
 
         .time-row {
             font-size: 1.1rem;
             color: #00adb5;
             margin-bottom: 8px;
+            word-break: break-all;
         }
 
         /* Seção de Debug Inteligente e Espaçada */
@@ -71,10 +76,9 @@
             justify-content: space-between;
             font-size: 0.85rem;
             color: #888888;
-            margin-bottom: 6px; /* Espaço confortável entre as linhas */
+            margin-bottom: 6px;
         }
 
-        /* Remove a margem da última linha para não sobrar espaço no box */
         .debug-row:last-child {
             margin-bottom: 0;
         }
@@ -96,12 +100,12 @@
 
         /* Estilização exclusiva do LED Verde */
         .led-verde {
-            color: #00ff66; /* Verde vivo */
+            color: #00ff66; 
             margin-right: 5px;
-            text-shadow: 0 0 8px #00ff66, 0 0 15px #00ff66; /* Efeito de luz acesa */
+            text-shadow: 0 0 8px #00ff66, 0 0 15px #00ff66;
         }
 
-        /* Indicador de Versão Discreto no Canto Inferior Direito */
+        /* Indicador de Versão Discreto */
         .version-tag {
             position: fixed;
             bottom: 15px;
@@ -110,6 +114,30 @@
             font-size: 0.75rem;
             color: #555555;
             user-select: none;
+        }
+
+        /* ==========================================================================
+           MEDIA QUERY: Ajustes específicos para telas de celulares (até 480px)
+           ========================================================================== */
+        @media (max-width: 480px) {
+            body {
+                padding: 30px 10px; /* Reduz o recuo das bordas da tela */
+            }
+            .container {
+                padding: 30px 15px; /* Deixa o card central ligeiramente mais compacto */
+            }
+            h1 {
+                font-size: 2rem; /* Reduz o título principal para não quebrar linha */
+            }
+            p {
+                font-size: 1rem; /* Ajusta o texto de descrição */
+            }
+            .time-row {
+                font-size: 0.95rem; /* Encolhe sutilmente o carimbo para caber na horizontal do box */
+            }
+            .debug-row {
+                font-size: 0.8rem; /* Ajusta as linhas de debug inferiores */
+            }
         }
     </style>
 </head>
@@ -136,7 +164,7 @@
         <span class="status-badge"><span class="led-verde">●</span> Servidor Ativo</span>
     </div>
 
-    <div class="version-tag">v.260629.05</div>
+    <div class="version-tag">v.260629.06</div>
 
     <script>
         function formatarData(dataObject) {
@@ -154,7 +182,6 @@
             const horaLocalDispositivo = new Date();
 
             try {
-                // Faz a requisição HEAD rápida para o próprio domínio
                 const response = await fetch(window.location.href, { method: 'HEAD' });
                 const dateHeader = response.headers.get('Date');
                 horaServidor = new Date(dateHeader);
@@ -163,10 +190,8 @@
                 horaServidor = new Date();
             }
 
-            // Calcula o desvio exato em segundos
             const timeOffsetInSeconds = (horaServidor.getTime() - horaLocalDispositivo.getTime()) / 1000;
 
-            // Preenche os dados organizados
             document.getElementById('clock').innerHTML = `Última requisição: ${formatarData(horaServidor)}`;
             document.getElementById('local-clock').innerHTML = formatarData(horaLocalDispositivo);
             
@@ -174,7 +199,6 @@
             document.getElementById('offset').innerHTML = `${sinal}${timeOffsetInSeconds.toFixed(1)}s`;
         }
 
-        // Executa uma única vez no carregamento
         processarMetricasTempo();
     </script>
 
