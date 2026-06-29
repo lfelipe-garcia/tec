@@ -49,22 +49,34 @@
             margin-bottom: 25px;
             border: 1px solid rgba(0, 173, 181, 0.2);
             letter-spacing: 1px;
+            min-width: 320px;
         }
 
         .time-row {
             font-size: 1.1rem;
             color: #00adb5;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
-        /* Estilo menor e mais discreto para as métricas secundárias */
+        /* Seção de Debug Inteligente e Espaçada */
+        .debug-section {
+            border-top: 1px dashed rgba(0, 173, 181, 0.15);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        /* Estrutura estilo grid/coluna para organizar os dados */
         .debug-row {
+            display: flex;
+            justify-content: space-between;
             font-size: 0.85rem;
             color: #888888;
-            border-top: 1px dashed rgba(0, 173, 181, 0.15);
-            padding-top: 5px;
-            margin-top: 5px;
-            text-align: left;
+            margin-bottom: 6px; /* Espaço confortável entre as linhas */
+        }
+
+        /* Remove a margem da última linha para não sobrar espaço no box */
+        .debug-row:last-child {
+            margin-bottom: 0;
         }
 
         /* Moldura do botão de status */
@@ -108,17 +120,23 @@
         <p>O domínio <strong>lfelipe.tec.br</strong> está configurado e operacional.</p>
         
         <div class="clock-container">
-            <div id="clock" class="time-row">Sincronizando requisição...</div>
-            <div class="debug-row">
-                <div id="local-clock">Hora do dispositivo: ...</div>
-                <div id="offset">Desvio do relógio: ...</div>
+            <div id="clock" class="time-row">Sincronizando...</div>
+            <div class="debug-section">
+                <div class="debug-row">
+                    <span>Hora local:</span>
+                    <span id="local-clock">...</span>
+                </div>
+                <div class="debug-row">
+                    <span>Desvio:</span>
+                    <span id="offset">...</span>
+                </div>
             </div>
         </div>
 
         <span class="status-badge"><span class="led-verde">●</span> Servidor Ativo</span>
     </div>
 
-    <div class="version-tag">v.260629.04</div>
+    <div class="version-tag">v.260629.05</div>
 
     <script>
         function formatarData(dataObject) {
@@ -126,9 +144,9 @@
             const mes = String(dataObject.getMonth() + 1).padStart(2, '0');
             const ano = dataObject.getFullYear();
             const horas = String(dataObject.getHours()).padStart(2, '0');
-            const minutos = String(dataObject.getMinutes()).padStart(2, '0');
+            const minutes = String(dataObject.getMinutes()).padStart(2, '0');
             const segundos = String(dataObject.getSeconds()).padStart(2, '0');
-            return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+            return `${dia}/${mes}/${ano} ${horas}:${minutes}:${segundos}`;
         }
 
         async function processarMetricasTempo() {
@@ -136,11 +154,9 @@
             const horaLocalDispositivo = new Date();
 
             try {
-                // Faz uma requisição HEAD super leve para a própria página para ler os Headers do servidor
+                // Faz a requisição HEAD rápida para o próprio domínio
                 const response = await fetch(window.location.href, { method: 'HEAD' });
                 const dateHeader = response.headers.get('Date');
-                
-                // Converte a hora GMT do servidor do GitHub para o fuso local automaticamente
                 horaServidor = new Date(dateHeader);
             } catch (error) {
                 console.log('Erro ao ler cabeçalho do servidor, usando fallback local.', error);
@@ -150,12 +166,12 @@
             // Calcula o desvio exato em segundos
             const timeOffsetInSeconds = (horaServidor.getTime() - horaLocalDispositivo.getTime()) / 1000;
 
-            // Preenche os campos na tela de forma estática
+            // Preenche os dados organizados
             document.getElementById('clock').innerHTML = `Última requisição: ${formatarData(horaServidor)}`;
-            document.getElementById('local-clock').innerHTML = `Hora do dispositivo: ${formatarData(horaLocalDispositivo)}`;
+            document.getElementById('local-clock').innerHTML = formatarData(horaLocalDispositivo);
             
             const sinal = timeOffsetInSeconds > 0 ? '+' : '';
-            document.getElementById('offset').innerHTML = `Desvio do relógio: ${sinal}${timeOffsetInSeconds.toFixed(1)}s`;
+            document.getElementById('offset').innerHTML = `${sinal}${timeOffsetInSeconds.toFixed(1)}s`;
         }
 
         // Executa uma única vez no carregamento
