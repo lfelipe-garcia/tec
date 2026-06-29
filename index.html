@@ -57,13 +57,14 @@
             margin-bottom: 5px;
         }
 
-        /* Estilo menor e mais discreto para a métrica de offset */
-        .offset-row {
+        /* Estilo menor e mais discreto para as métricas secundárias */
+        .debug-row {
             font-size: 0.85rem;
             color: #888888;
             border-top: 1px dashed rgba(0, 173, 181, 0.15);
             padding-top: 5px;
             margin-top: 5px;
+            text-align: left;
         }
 
         /* Moldura do botão de status */
@@ -108,63 +109,57 @@
         
         <div class="clock-container">
             <div id="clock" class="time-row">Sincronizando requisição...</div>
-            <div id="offset" class="offset-row">Calculando desvio...</div>
+            <div class="debug-row">
+                <div id="local-clock">Hora do dispositivo: ...</div>
+                <div id="offset">Desvio do relógio: ...</div>
+            </div>
         </div>
 
         <span class="status-badge"><span class="led-verde">●</span> Servidor Ativo</span>
     </div>
 
-    <div class="version-tag">v.260629.03</div>
+    <div class="version-tag">v.260629.04</div>
 
     <script>
-        async function carimbarHoraRequisicao() {
-            let dataFinal;
-            let timeOffsetInSeconds = 0;
-
-            try {
-                // Chamada única para a API de tempo (Fuso de Fortaleza)
-                const response = await fetch('https://worldtimeapi.org/api/timezone/America/Fortaleza');
-                const data = await response.json();
-                
-                const horaServidor = new Date(data.datetime);
-                const horaLocalDispositivo = new Date();
-                
-                // Calcula a discrepância exata convertendo milissegundos para segundos
-                const timeOffsetInMs = horaServidor.getTime() - horaLocalDispositivo.getTime();
-                timeOffsetInSeconds = timeOffsetInMs / 1000;
-                
-                dataFinal = horaServidor;
-            } catch (error) {
-                console.log('Erro na API de tempo, usando fallback local.', error);
-                dataFinal = new Date();
-                timeOffsetInSeconds = null;
-            }
-
-            // Formatação do carimbo de data/hora
-            const dia = String(dataFinal.getDate()).padStart(2, '0');
-            const mes = String(dataFinal.getMonth() + 1).padStart(2, '0');
-            const ano = dataFinal.getFullYear();
-            
-            const horas = String(dataFinal.getHours()).padStart(2, '0');
-            const minutos = String(dataFinal.getMinutes()).padStart(2, '0');
-            const segundos = String(dataFinal.getSeconds()).padStart(2, '0');
-
-            // Renderiza a hora da requisição
-            document.getElementById('clock').innerHTML = `Última requisição: ${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
-
-            // Renderiza e formata a exibição do desvio do relógio local
-            const offsetElement = document.getElementById('offset');
-            if (timeOffsetInSeconds === null) {
-                offsetElement.innerHTML = `Desvio do relógio local: Indisponível`;
-            } else {
-                // Formata para mostrar o sinal de + caso seja positivo, fixando em 1 casa decimal
-                const sinal = timeOffsetInSeconds > 0 ? '+' : '';
-                offsetElement.innerHTML = `Desvio do relógio local: ${sinal}${timeOffsetInSeconds.toFixed(1)}s`;
-            }
+        function formatarData(dataObject) {
+            const dia = String(dataObject.getDate()).padStart(2, '0');
+            const mes = String(dataObject.getMonth() + 1).padStart(2, '0');
+            const ano = dataObject.getFullYear();
+            const horas = String(dataObject.getHours()).padStart(2, '0');
+            const minutos = String(dataObject.getMinutes()).padStart(2, '0');
+            const segundos = String(dataObject.getSeconds()).padStart(2, '0');
+            return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
         }
 
-        // Executa uma única vez no carregamento da página
-        carimbarHoraRequisicao();
+        async function processarMetricasTempo() {
+            let horaServidor;
+            const horaLocalDispositivo = new Date();
+
+            try {
+                // Faz uma requisição HEAD super leve para a própria página para ler os Headers do servidor
+                const response = await fetch(window.location.href, { method: 'HEAD' });
+                const dateHeader = response.headers.get('Date');
+                
+                // Converte a hora GMT do servidor do GitHub para o fuso local automaticamente
+                horaServidor = new Date(dateHeader);
+            } catch (error) {
+                console.log('Erro ao ler cabeçalho do servidor, usando fallback local.', error);
+                horaServidor = new Date();
+            }
+
+            // Calcula o desvio exato em segundos
+            const timeOffsetInSeconds = (horaServidor.getTime() - horaLocalDispositivo.getTime()) / 1000;
+
+            // Preenche os campos na tela de forma estática
+            document.getElementById('clock').innerHTML = `Última requisição: ${formatarData(horaServidor)}`;
+            document.getElementById('local-clock').innerHTML = `Hora do dispositivo: ${formatarData(horaLocalDispositivo)}`;
+            
+            const sinal = timeOffsetInSeconds > 0 ? '+' : '';
+            document.getElementById('offset').innerHTML = `Desvio do relógio: ${sinal}${timeOffsetInSeconds.toFixed(1)}s`;
+        }
+
+        // Executa uma única vez no carregamento
+        processarMetricasTempo();
     </script>
 
 </body>
