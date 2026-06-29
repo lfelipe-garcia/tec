@@ -52,15 +52,19 @@
             border: 1px solid rgba(0, 173, 181, 0.2);
             letter-spacing: 1px;
             width: 100%;
-            max-width: 360px; /* Define um limite confortável para PCs */
+            max-width: 380px;
             box-sizing: border-box;
         }
 
+        /* Estrutura flexível para a linha principal do relógio */
         .time-row {
             font-size: 1.1rem;
             color: #00adb5;
             margin-bottom: 8px;
-            word-break: break-all;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap; /* Permite a quebra controlada se necessário */
         }
 
         /* Seção de Debug Inteligente e Espaçada */
@@ -121,22 +125,28 @@
            ========================================================================== */
         @media (max-width: 480px) {
             body {
-                padding: 30px 10px; /* Reduz o recuo das bordas da tela */
+                padding: 30px 10px;
             }
             .container {
-                padding: 30px 15px; /* Deixa o card central ligeiramente mais compacto */
+                padding: 30px 15px;
             }
             h1 {
-                font-size: 2rem; /* Reduz o título principal para não quebrar linha */
+                font-size: 2rem;
             }
             p {
-                font-size: 1rem; /* Ajusta o texto de descrição */
+                font-size: 1rem;
             }
+            /* Força a quebra em duas linhas limpas no celular e centraliza */
             .time-row {
-                font-size: 0.95rem; /* Encolhe sutilmente o carimbo para caber na horizontal do box */
+                flex-direction: column;
+                gap: 4px;
+                font-size: 1rem;
+            }
+            .time-label {
+                color: rgba(0, 173, 181, 0.7); /* Rótulo sutilmente mais suave no celular */
             }
             .debug-row {
-                font-size: 0.8rem; /* Ajusta as linhas de debug inferiores */
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -148,7 +158,10 @@
         <p>O domínio <strong>lfelipe.tec.br</strong> está configurado e operacional.</p>
         
         <div class="clock-container">
-            <div id="clock" class="time-row">Sincronizando...</div>
+            <div class="time-row">
+                <span class="time-label">Última requisição:</span>
+                <span id="clock">Sincronizando...</span>
+            </div>
             <div class="debug-section">
                 <div class="debug-row">
                     <span>Hora local:</span>
@@ -164,7 +177,7 @@
         <span class="status-badge"><span class="led-verde">●</span> Servidor Ativo</span>
     </div>
 
-    <div class="version-tag">v.260629.06</div>
+    <div class="version-tag">v.260629.07</div>
 
     <script>
         function formatarData(dataObject) {
@@ -192,7 +205,8 @@
 
             const timeOffsetInSeconds = (horaServidor.getTime() - horaLocalDispositivo.getTime()) / 1000;
 
-            document.getElementById('clock').innerHTML = `Última requisição: ${formatarData(horaServidor)}`;
+            // Injeta apenas o valor de tempo no ID correspondente, sem misturar com o rótulo fixo
+            document.getElementById('clock').innerHTML = formatarData(horaServidor);
             document.getElementById('local-clock').innerHTML = formatarData(horaLocalDispositivo);
             
             const sinal = timeOffsetInSeconds > 0 ? '+' : '';
